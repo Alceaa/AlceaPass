@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">AlceaPass</string>
+    <string name="login_btn">Войти</string>
+    <string name="login_hint">Введите мастер пароль:</string>
+</resources>
