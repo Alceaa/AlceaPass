@@ -3,6 +3,9 @@
     <string name="login_btn">Войти</string>
     <string name="login_hint">Введите мастер пароль:</string>
     <string name="main_title">Список сохраненных паролей</string>
+    <string name="profile_create_btn">Создать профиль</string>
+    <string name="master_password_hint">Придумайте мастер-пароль:</string>
+    <string name="profile_hint">Введите имя профиля:</string>
     <string-array name="filter">
         <item>Все</item>
         <item>Категории</item>
