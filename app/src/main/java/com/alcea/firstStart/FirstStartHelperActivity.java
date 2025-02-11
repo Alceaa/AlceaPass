@@ -1,13 +1,11 @@
 package com.alcea.firstStart;
-
-import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-
+import androidx.appcompat.app.AppCompatActivity;
 import com.alcea.LoginActivity;
 
-public class FirstStartHelperActivity extends Activity {
+public class FirstStartHelperActivity extends AppCompatActivity {
     private SharedPreferences prefs;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,11 +19,11 @@ public class FirstStartHelperActivity extends Activity {
 
         if (prefs.getBoolean("firstrun", true)) {
             prefs.edit().putBoolean("firstrun", false).apply();
-            startActivity(new Intent(FirstStartHelperActivity.this , FirstStartPasswordActivity.class));
+            startActivity(new Intent(this, FirstStartPasswordActivity.class));
             finish();
         }
         else {
-            startActivity(new Intent(FirstStartHelperActivity.this , LoginActivity.class));
+            startActivity(new Intent(this, LoginActivity.class));
             finish();
         }
     }

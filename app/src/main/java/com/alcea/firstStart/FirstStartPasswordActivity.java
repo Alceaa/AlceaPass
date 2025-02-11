@@ -1,76 +1,80 @@
 package com.alcea.firstStart;
 
 import android.content.Intent;
-import android.os.Bundle;
 import android.widget.Button;
-import androidx.appcompat.app.AppCompatActivity;
-
+import androidx.fragment.app.DialogFragment;
+import com.alcea.AbstractActivity;
 import com.alcea.MainActivity;
 import com.alcea.R;
-import com.alcea.database.DatabaseManager;
-import com.alcea.fragments.CustomDialogFragment;
-import com.alcea.interfaces.Transferable;
+import com.alcea.interfaces.DialogBehaviour;
 import com.alcea.utils.CheckPassword;
+import com.alcea.utils.PasswordEncoder;
 import com.google.android.material.textfield.TextInputEditText;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 
-public class FirstStartPasswordActivity extends AppCompatActivity implements Transferable {
+public class FirstStartPasswordActivity extends AbstractActivity implements DialogBehaviour {
     TextInputEditText profile;
     TextInputEditText masterPassword;
     Button create;
-    private final DatabaseManager databaseManager = new DatabaseManager(this);
+    private String profileText;
+    private String masterPasswordText;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    protected void initialize() {
         setContentView(R.layout.firststart);
         profile = findViewById(R.id.profile);
         masterPassword = findViewById(R.id.masterPassword);
         create = findViewById(R.id.create);
-        create.setOnClickListener(v -> create());
-
-        databaseManager.open();
+        create.setOnClickListener(v -> {
+            try {
+                create();
+            } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
-    private void create(){
-        String profileText = String.valueOf(profile.getText());
-        String masterPasswordText = String.valueOf(profile.getText());
+    private void create() throws NoSuchAlgorithmException, InvalidKeySpecException {
+        profileText = String.valueOf(profile.getText());
+        masterPasswordText = String.valueOf(masterPassword.getText());
         if(profileText.isEmpty() || masterPasswordText.isEmpty()){
-            showCustomDialog("Ошибка", "Заполните все поля", null, "ОК", null);
+            showCustomDialog("Ошибка", "Заполните все поля", "ОК", null);
         }
         else{
             if(databaseManager.getProfile(profileText) == null){
                 if(!CheckPassword.checkPasswordValid(masterPasswordText)){
-                    showCustomDialog("Ошибка", "Пароль содержит недопустимые символы", null, "ОК", null);
+                    showCustomDialog("Ошибка", "Пароль содержит недопустимые символы", "ОК", null);
                 }
                 else if(!CheckPassword.checkPasswordStrong(masterPasswordText)){
-                    showCustomDialog("Предупреждение", "Пароль слишком слабый. Для безопасности рекомендуется его усилить",
-                            "main", "Все равно продолжить", "Отмена");
+                    showCustomDialog("Предупреждение", "Пароль слишком слабый. Для безопасности рекомендуется его усилить", "Изменить пароль", "Всё равно продолжить");
                 }
                 else{
-                    databaseManager.createProfile(profileText);
-                    transfer(new Intent(this, MainActivity.class));
+                    success();
                 }
             }
             else{
-                showCustomDialog("Ошибка", "Профиль с таким именем уже существует", null, "ОК", null);
+                showCustomDialog("Ошибка", "Профиль с таким именем уже существует", "ОК", null);
             }
         }
     }
 
-    private void showCustomDialog(String title, String message, String activity, String positive, String negative){
-        CustomDialogFragment dialog = new CustomDialogFragment();
-        Bundle args = new Bundle();
-        args.putString("title", title);
-        args.putString("message", message);
-        args.putString("activity", activity);
-        args.putString("positive", positive);
-        args.putString("negative", negative);
-        dialog.setArguments(args);
-        dialog.show(getSupportFragmentManager(), "custom");
+    private void success() throws NoSuchAlgorithmException, InvalidKeySpecException {
+        String[] encoded = PasswordEncoder.hash(masterPasswordText);
+        String master = encoded[0];
+        String salt = encoded[1];
+        databaseManager.createProfile(profileText, master, salt);
+        transfer(new Intent(this, MainActivity.class));
     }
+    @Override
+    public void onDialogPositiveClick(DialogFragment dialog) {}
 
-    public void transfer(Intent intent){
-        startActivity(intent);
-        finish();
+    @Override
+    public void onDialogNegativeClick(DialogFragment dialog) {
+        try {
+            success();
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
