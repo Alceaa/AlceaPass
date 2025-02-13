@@ -15,10 +15,6 @@ public class CustomSpinnerAdapter extends ArrayAdapter<String> {
     public CustomSpinnerAdapter(Context context, String[] items) {
         super(context, R.layout.spinner_item, items);
     }
-    @Override
-    public View getDropDownView(int position, View convertView, @NonNull ViewGroup parent) {
-        return getCustomView(position, convertView, parent);
-    }
     @NonNull
     @Override
     public View getView(int position, View convertView, @NonNull ViewGroup parent) {

@@ -7,6 +7,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.alcea.models.Profile;
+import com.alcea.models.Service;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,13 +59,13 @@ public class DatabaseManager {
         return profile;
     }
 
-    public Profile createProfile(String name, String master, String salt){
+    public Profile createProfile(Profile profile){
         ContentValues cv = new ContentValues();
-        cv.put("name", name);
-        cv.put("master", master);
-        cv.put("salt", salt);
+        cv.put("name", profile.getName());
+        cv.put("master", profile.getMaster());
+        cv.put("salt", profile.getSalt());
         database.insert("profiles", null, cv);
-        return getProfile(name);
+        return getProfile(profile.getName());
     }
 
     public long deleteProfile(Profile profile){
@@ -77,5 +78,41 @@ public class DatabaseManager {
         String whereClause = "id = " + profile.getId();
         cv.put("name", profile.getName());
         return database.update("profiles", cv, whereClause, null);
+    }
+
+    public List<Service> getServices(){
+        ArrayList<Service> services = new ArrayList<>();
+        Cursor cursor = getAllEntries("services", new String[]{"id", "service", "logoResId", "password"});
+        while (cursor.moveToNext()){
+            @SuppressLint("Range") int id = cursor.getInt(cursor.getColumnIndex("id"));
+            @SuppressLint("Range") String service = cursor.getString(cursor.getColumnIndex("service"));
+            @SuppressLint("Range") int logoResId = cursor.getInt(cursor.getColumnIndex("logoResId"));
+            @SuppressLint("Range") String password = cursor.getString(cursor.getColumnIndex("password"));
+            services.add(new Service(id, service, logoResId, password));
+        }
+        return services;
+    }
+    public Service getService(String nameAsked){
+        Service service = null;
+        String query = String.format("SELECT * FROM %s WHERE %s = ?", "services", "name");
+        Cursor cursor = database.rawQuery(query, new String[]{nameAsked});
+        if(cursor.moveToFirst()){
+            @SuppressLint("Range") int id = cursor.getInt(cursor.getColumnIndex("id"));
+            @SuppressLint("Range") String name = cursor.getString(cursor.getColumnIndex("service"));
+            @SuppressLint("Range") int logoResId = cursor.getInt(cursor.getColumnIndex("logoResId"));
+            @SuppressLint("Range") String password = cursor.getString(cursor.getColumnIndex("password"));
+            service = new Service(id, name, logoResId, password);
+        }
+        cursor.close();
+        return service;
+    }
+
+    public Service createService(Service service){
+        ContentValues cv = new ContentValues();
+        cv.put("service", service.getName());
+        cv.put("logoResId", service.getLogoResId());
+        cv.put("password", service.getPassword());
+        database.insert("services", null, cv);
+        return getService(service.getName());
     }
 }

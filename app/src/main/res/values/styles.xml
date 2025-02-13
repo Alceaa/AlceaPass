@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="CustomAlertDialog" parent="Theme.AppCompat.Dialog.Alert">
+        <item name="android:background">#F71A1A1A</item>
+        <item name="android:textColorPrimary">#FFFFFF</item>
+        <item name="android:textColorSecondary">#FFFFFF</item>
+    </style>
+
+    <style name="CustomDialogButton">
+        <item name="android:background">#F71A1A1A</item>
+        <item name="android:textColor">#FFFFFF</item>
+    </style>
+</resources>

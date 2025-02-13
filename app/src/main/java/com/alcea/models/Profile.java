@@ -1,7 +1,7 @@
 package com.alcea.models;
 
 public class Profile {
-    private final int id;
+    private int id;
     private String name;
     private String master;
     private String salt;
@@ -11,6 +11,9 @@ public class Profile {
         this.name = name;
         this.master = master;
         this.salt = salt;
+    }
+    public Profile(){
+
     }
 
     public int getId() {
@@ -28,7 +31,15 @@ public class Profile {
         this.name = name;
     }
 
+    public void setMaster(String master) {
+        this.master = master;
+    }
+
     public String getSalt() {
         return salt;
+    }
+
+    public void setSalt(String salt) {
+        this.salt = salt;
     }
 }

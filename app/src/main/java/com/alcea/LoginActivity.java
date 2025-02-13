@@ -38,6 +38,7 @@ public class LoginActivity extends AbstractActivity implements DialogBehaviour {
             profileNames[i] = profiles.get(i).getName();
         }
         CustomSpinnerAdapter adapter = new CustomSpinnerAdapter(this, profileNames);
+        adapter.setDropDownViewResource(R.layout.spinner_dropdown);
         profileSpinner.setAdapter(adapter);
         login.setOnClickListener(v -> {
             try {
@@ -65,8 +66,12 @@ public class LoginActivity extends AbstractActivity implements DialogBehaviour {
     }
 
     @Override
-    public void onDialogPositiveClick(DialogFragment dialog) {}
+    public void onDialogPositiveClick(DialogFragment dialog) {
+        dialog.dismiss();
+    }
 
     @Override
-    public void onDialogNegativeClick(DialogFragment dialog) {}
+    public void onDialogNegativeClick(DialogFragment dialog) {
+        dialog.dismiss();
+    }
 }

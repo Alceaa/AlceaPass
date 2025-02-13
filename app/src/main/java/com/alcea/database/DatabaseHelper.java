@@ -23,10 +23,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "name TEXT UNIQUE," +
                 "master TEXT," +
                 "salt TEXT);");
-        db.execSQL("CREATE TABLE IF NOT EXISTS passwords (" +
+        db.execSQL("CREATE TABLE IF NOT EXISTS logos (" +
+                "id INTEGER NOT NULL UNIQUE PRIMARY KEY AUTOINCREMENT," +
+                "path TEXT UNIQUE);");
+        db.execSQL("CREATE TABLE IF NOT EXISTS services (" +
                 "id INTEGER NOT NULL UNIQUE PRIMARY KEY AUTOINCREMENT," +
                 "service TEXT UNIQUE," +
-                "value TEXT);");
+                "logoResId INTEGER," +
+                "password TEXT," +
+                "FOREIGN KEY (logoResId) REFERENCES logos (id));");
     }
 
     @Override

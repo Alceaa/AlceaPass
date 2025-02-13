@@ -7,6 +7,7 @@ import com.alcea.AbstractActivity;
 import com.alcea.MainActivity;
 import com.alcea.R;
 import com.alcea.interfaces.DialogBehaviour;
+import com.alcea.models.Profile;
 import com.alcea.utils.CheckPassword;
 import com.alcea.utils.PasswordEncoder;
 import com.google.android.material.textfield.TextInputEditText;
@@ -63,11 +64,17 @@ public class FirstStartPasswordActivity extends AbstractActivity implements Dial
         String[] encoded = PasswordEncoder.hash(masterPasswordText);
         String master = encoded[0];
         String salt = encoded[1];
-        databaseManager.createProfile(profileText, master, salt);
+        Profile profile = new Profile();
+        profile.setName(profileText);
+        profile.setMaster(master);
+        profile.setSalt(salt);
+        databaseManager.createProfile(profile);
         transfer(new Intent(this, MainActivity.class));
     }
     @Override
-    public void onDialogPositiveClick(DialogFragment dialog) {}
+    public void onDialogPositiveClick(DialogFragment dialog) {
+        dialog.dismiss();
+    }
 
     @Override
     public void onDialogNegativeClick(DialogFragment dialog) {
