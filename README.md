@@ -1,1 +1,1 @@
-Android Password Manager (sqlite, pbkdf2WithHmacSHA1)
+Android Password Manager (sqlite, pbkdf2WithHmacSHA1, AES)
