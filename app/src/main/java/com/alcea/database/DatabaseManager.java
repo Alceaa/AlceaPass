@@ -82,26 +82,28 @@ public class DatabaseManager {
 
     public List<Service> getServices(){
         ArrayList<Service> services = new ArrayList<>();
-        Cursor cursor = getAllEntries("services", new String[]{"id", "service", "logoResId", "password"});
+        Cursor cursor = getAllEntries("services", new String[]{"id", "service", "logoResId", "password", "timestamp"});
         while (cursor.moveToNext()){
             @SuppressLint("Range") int id = cursor.getInt(cursor.getColumnIndex("id"));
             @SuppressLint("Range") String service = cursor.getString(cursor.getColumnIndex("service"));
             @SuppressLint("Range") int logoResId = cursor.getInt(cursor.getColumnIndex("logoResId"));
             @SuppressLint("Range") String password = cursor.getString(cursor.getColumnIndex("password"));
-            services.add(new Service(id, service, logoResId, password));
+            @SuppressLint("Range") String timestamp = cursor.getString(cursor.getColumnIndex("timestamp"));
+            services.add(new Service(id, service, logoResId, password, timestamp));
         }
         return services;
     }
     public Service getService(String nameAsked){
         Service service = null;
-        String query = String.format("SELECT * FROM %s WHERE %s = ?", "services", "name");
+        String query = String.format("SELECT * FROM %s WHERE %s = ?", "services", "service");
         Cursor cursor = database.rawQuery(query, new String[]{nameAsked});
         if(cursor.moveToFirst()){
             @SuppressLint("Range") int id = cursor.getInt(cursor.getColumnIndex("id"));
             @SuppressLint("Range") String name = cursor.getString(cursor.getColumnIndex("service"));
             @SuppressLint("Range") int logoResId = cursor.getInt(cursor.getColumnIndex("logoResId"));
             @SuppressLint("Range") String password = cursor.getString(cursor.getColumnIndex("password"));
-            service = new Service(id, name, logoResId, password);
+            @SuppressLint("Range") String timestamp = cursor.getString(cursor.getColumnIndex("timestamp"));
+            service = new Service(id, name, logoResId, password, timestamp);
         }
         cursor.close();
         return service;
@@ -112,6 +114,7 @@ public class DatabaseManager {
         cv.put("service", service.getName());
         cv.put("logoResId", service.getLogoResId());
         cv.put("password", service.getPassword());
+        cv.put("timestamp", service.getTimestamp());
         database.insert("services", null, cv);
         return getService(service.getName());
     }

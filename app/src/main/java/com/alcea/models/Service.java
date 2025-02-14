@@ -5,13 +5,16 @@ public class Service {
     private String name;
     private Integer logoResId;
     private String password;
+    private String timestamp;
 
 
-    public Service(int id, String name, Integer logoResId, String password) {
+    public Service(int id, String name, Integer logoResId, String password, String timestamp) {
         this.id = id;
         this.name = name;
         this.logoResId = logoResId;
         this.password = password;
+        this.timestamp = timestamp;
+
     }
     public Service(){
 
@@ -33,6 +36,10 @@ public class Service {
         return password;
     }
 
+    public String getTimestamp() {
+        return timestamp;
+    }
+
     public void setName(String name) {
         this.name = name;
     }
@@ -43,5 +50,9 @@ public class Service {
 
     public void setLogoResId(Integer logoResId) {
         this.logoResId = logoResId;
+    }
+
+    public void setTimestamp(String timestamp) {
+        this.timestamp = timestamp;
     }
 }

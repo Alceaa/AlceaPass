@@ -1,10 +1,15 @@
 package com.alcea;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.graphics.Color;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -15,11 +20,18 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.alcea.adapters.ServicesAdapter;
 import com.alcea.models.Service;
+import com.alcea.utils.PasswordEncoder;
+import com.alcea.utils.Utils;
 
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class MainActivity extends AbstractActivity {
+    private Bundle extras;
 
     private RecyclerView servicesRecyclerView;
     private ServicesAdapter servicesAdapter;
@@ -28,9 +40,21 @@ public class MainActivity extends AbstractActivity {
     private int extraFieldCount = 0;
     private static final int MAX_EXTRA_FIELDS = 5;
 
+    @SuppressLint("ResourceType")
     @Override
     protected void initialize() {
         setContentView(R.layout.activity_main);
+        extras = getIntent().getExtras();
+
+        String[] filters = getResources().getStringArray(R.array.filter);
+        ArrayAdapter filterAdapter = new ArrayAdapter(this, R.layout.filter_item, filters);
+        AutoCompleteTextView autocompleteFilter = findViewById(R.id.autoCompleteFilter);
+        autocompleteFilter.setAdapter(filterAdapter);
+        autocompleteFilter.setOnItemClickListener((parent, view, position, id) -> {
+            serviceItemsFilter(parent.getItemAtPosition(position).toString());
+        });
+
+
         servicesRecyclerView = findViewById(R.id.services_recycler_view);
         servicesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
@@ -59,7 +83,17 @@ public class MainActivity extends AbstractActivity {
                 addExtraField(extraFieldsContainer);
             }
         });
-        builder.setPositiveButton("Сохранить", (dialog, which) -> {
+        builder.setPositiveButton("Сохранить", null);
+        builder.setNegativeButton("Отмена", (dialog, which) -> dialog.dismiss());
+        AlertDialog dialog = builder.create();
+            dialog.setOnShowListener(dialogInterface -> {
+                Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+                Button negativeButton = dialog.getButton(AlertDialog.BUTTON_NEGATIVE);
+                positiveButton.setTextColor(Color.WHITE);
+                negativeButton.setTextColor(Color.WHITE);
+            });
+
+        dialog.setOnShowListener(v1 -> dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v2 -> {
             String serviceName = serviceNameEditText.getText().toString();
             String servicePassword = servicePasswordEditText.getText().toString();
             if(serviceSave(serviceName, servicePassword)){
@@ -69,15 +103,7 @@ public class MainActivity extends AbstractActivity {
                 TextView error = dialogView.findViewById(R.id.service_add_error);
                 error.setText("Ошибка! Сервис с таким названием уже существует");
             }
-        });
-        builder.setNegativeButton("Отмена", (dialog, which) -> dialog.dismiss());
-        AlertDialog dialog = builder.create();
-            dialog.setOnShowListener(dialogInterface -> {
-                Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
-                Button negativeButton = dialog.getButton(AlertDialog.BUTTON_NEGATIVE);
-                positiveButton.setTextColor(Color.WHITE);
-                negativeButton.setTextColor(Color.WHITE);
-            });
+        }));
         dialog.show();
     }
 
@@ -101,8 +127,38 @@ public class MainActivity extends AbstractActivity {
         }
         Service service = new Service();
         service.setName(serviceName);
-        service.setPassword(servicePassword);
-        databaseManager.createService(service);
+        service.setTimestamp(Utils.timestamp());
+        try {
+            String encrypted = PasswordEncoder.encrypt(servicePassword, extras.getString("master"));
+            service.setPassword(encrypted);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        Service newService = databaseManager.createService(service);
+        servicesList.add(newService);
+        updateServiceList(servicesList.indexOf(newService));
         return true;
+    }
+
+    private void updateServiceList(){
+        servicesAdapter.notifyDataSetChanged();
+    }
+    private void updateServiceList(int position){
+        servicesAdapter.notifyItemInserted(position);
+    }
+
+    private void serviceItemsFilter(String filter){
+        switch (filter){
+            case "По названию":
+                servicesList.sort((o1, o2) -> o2.getName().compareTo(o1.getName()));
+                Collections.reverse(servicesList);
+                break;
+            case "По дате добавления":
+                servicesList.sort(Comparator.comparing(o -> Utils.dateParse(o.getTimestamp())));
+                break;
+            default:
+                break;
+        }
+        updateServiceList();
     }
 }

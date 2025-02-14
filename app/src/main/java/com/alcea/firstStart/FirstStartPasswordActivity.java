@@ -69,7 +69,9 @@ public class FirstStartPasswordActivity extends AbstractActivity implements Dial
         profile.setMaster(master);
         profile.setSalt(salt);
         databaseManager.createProfile(profile);
-        transfer(new Intent(this, MainActivity.class));
+        Intent i = new Intent(this, MainActivity.class);
+        i.putExtra("master", master);
+        transfer(i);
     }
     @Override
     public void onDialogPositiveClick(DialogFragment dialog) {

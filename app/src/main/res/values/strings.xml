@@ -8,8 +8,7 @@
     <string name="profile_hint">Введите имя профиля:</string>
     <string name="profile_spinner_hint">Профиль:</string>
     <string-array name="filter">
-        <item>Все</item>
-        <item>Категории</item>
+        <item>По названию</item>
         <item>По дате создания</item>
     </string-array>
 </resources>

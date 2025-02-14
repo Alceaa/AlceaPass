@@ -57,7 +57,9 @@ public class LoginActivity extends AbstractActivity implements DialogBehaviour {
         else{
             Profile profile = databaseManager.getProfile(profileSpinner.getSelectedItem().toString());
             if(PasswordEncoder.authenticate(masterPasswordText, profile.getMaster(), profile.getSalt())){
-                transfer(new Intent(this, MainActivity.class));
+                Intent i = new Intent(this, MainActivity.class);
+                i.putExtra("master", masterPasswordText);
+                transfer(i);
             }
             else{
                 showCustomDialog("Ошибка", "Пароль неверный",  "ОК", null);
