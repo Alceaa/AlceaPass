@@ -2,12 +2,10 @@ package com.alcea;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
@@ -19,13 +17,13 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.alcea.adapters.ServicesAdapter;
+import com.alcea.interfaces.RecyclerItemClickListener;
 import com.alcea.models.Service;
 import com.alcea.utils.PasswordEncoder;
 import com.alcea.utils.Utils;
 
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
+import org.w3c.dom.Text;
+
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -57,6 +55,17 @@ public class MainActivity extends AbstractActivity {
 
         servicesRecyclerView = findViewById(R.id.services_recycler_view);
         servicesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        servicesRecyclerView.addOnItemTouchListener(new RecyclerItemClickListener(this, servicesRecyclerView, new RecyclerItemClickListener.OnItemClickListener() {
+            @Override
+            public void onItemClick(View view, int position) {
+                showInfoServiceDialog(view);
+            }
+
+            @Override
+            public void onLongItemClick(View view, int position) {
+
+            }
+        }));
 
         servicesList = databaseManager.getServices();
 
@@ -71,7 +80,7 @@ public class MainActivity extends AbstractActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.CustomAlertDialog);
         builder.setTitle("Добавить новый сервис");
         LayoutInflater inflater = getLayoutInflater();
-        View dialogView = inflater.inflate(R.layout.dialog_add_service, null);
+        View dialogView = inflater.inflate(R.layout.dialog_service, null);
         builder.setView(dialogView);
 
         EditText serviceNameEditText = dialogView.findViewById(R.id.service_name);
@@ -96,7 +105,8 @@ public class MainActivity extends AbstractActivity {
         dialog.setOnShowListener(v1 -> dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v2 -> {
             String serviceName = serviceNameEditText.getText().toString();
             String servicePassword = servicePasswordEditText.getText().toString();
-            if(serviceSave(serviceName, servicePassword)){
+            String extraData = getExtraFieldsData(extraFieldsContainer);
+            if(serviceSave(serviceName, servicePassword, extraData)){
                 dialog.dismiss();
             }
             else{
@@ -121,13 +131,26 @@ public class MainActivity extends AbstractActivity {
         container.addView(removeFieldButton);
         extraFieldCount++;
     }
-    private boolean serviceSave(String serviceName, String servicePassword){
+
+    private String getExtraFieldsData(LinearLayout container){
+        int size = container.getChildCount();
+        String[] data = new String[size / 2];
+        for(int i = 0; i < size; i++){
+            if(container.getChildAt(i) instanceof EditText){
+                data[i] = ((EditText) container.getChildAt(i)).getText().toString();
+            }
+        }
+        return String.join(";", data);
+    }
+
+    private boolean serviceSave(String serviceName, String servicePassword, String extraData){
         if (databaseManager.getService(serviceName) != null){
             return false;
         }
         Service service = new Service();
         service.setName(serviceName);
         service.setTimestamp(Utils.timestamp());
+        service.setExtraData(extraData);
         try {
             String encrypted = PasswordEncoder.encrypt(servicePassword, extras.getString("master"));
             service.setPassword(encrypted);
@@ -160,5 +183,27 @@ public class MainActivity extends AbstractActivity {
                 break;
         }
         updateServiceList();
+    }
+
+    private void showInfoServiceDialog(View item){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.CustomAlertDialog);
+        TextView serviceName = item.findViewById(R.id.service_name);
+        builder.setTitle("Информация о " + serviceName.getText().toString());
+        LayoutInflater inflater = getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.dialog_service, null);
+        builder.setView(dialogView);
+
+        Service service = databaseManager.getService(serviceName.getText().toString());
+
+        EditText serviceNameEditText = dialogView.findViewById(R.id.service_name);
+        serviceNameEditText.setText(service.getName());
+        EditText servicePasswordEditText = dialogView.findViewById(R.id.service_password);
+        try {
+            servicePasswordEditText.setText(PasswordEncoder.decrypt(service.getPassword(), extras.getString("master")));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        LinearLayout extraFieldsContainer = dialogView.findViewById(R.id.extra_fields_container);
+        builder.show();
     }
 }

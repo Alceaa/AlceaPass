@@ -6,14 +6,16 @@ public class Service {
     private Integer logoResId;
     private String password;
     private String timestamp;
+    private String extraData;
 
 
-    public Service(int id, String name, Integer logoResId, String password, String timestamp) {
+    public Service(int id, String name, Integer logoResId, String password, String timestamp, String extraData) {
         this.id = id;
         this.name = name;
         this.logoResId = logoResId;
         this.password = password;
         this.timestamp = timestamp;
+        this.extraData = extraData;
 
     }
     public Service(){
@@ -40,6 +42,10 @@ public class Service {
         return timestamp;
     }
 
+    public String getExtraData() {
+        return extraData;
+    }
+
     public void setName(String name) {
         this.name = name;
     }
@@ -54,5 +60,9 @@ public class Service {
 
     public void setTimestamp(String timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public void setExtraData(String extraData) {
+        this.extraData = extraData;
     }
 }

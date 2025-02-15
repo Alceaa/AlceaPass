@@ -31,6 +31,16 @@
             android:gravity="center_vertical|start"
             android:paddingStart="8dp"
             android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/service_timestamp"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textColor="@android:color/white"
+            android:gravity="center_vertical|start"
+            android:paddingStart="8dp"
+            android:textSize="11sp" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

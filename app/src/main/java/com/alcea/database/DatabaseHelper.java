@@ -32,6 +32,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "logoResId INTEGER," +
                 "password TEXT," +
                 "timestamp TEXT," +
+                "extra TEXT," +
                 "FOREIGN KEY (logoResId) REFERENCES logos (id));");
     }
 

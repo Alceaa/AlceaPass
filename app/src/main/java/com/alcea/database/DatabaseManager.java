@@ -82,14 +82,15 @@ public class DatabaseManager {
 
     public List<Service> getServices(){
         ArrayList<Service> services = new ArrayList<>();
-        Cursor cursor = getAllEntries("services", new String[]{"id", "service", "logoResId", "password", "timestamp"});
+        Cursor cursor = getAllEntries("services", new String[]{"id", "service", "logoResId", "password", "timestamp", "extra"});
         while (cursor.moveToNext()){
             @SuppressLint("Range") int id = cursor.getInt(cursor.getColumnIndex("id"));
             @SuppressLint("Range") String service = cursor.getString(cursor.getColumnIndex("service"));
             @SuppressLint("Range") int logoResId = cursor.getInt(cursor.getColumnIndex("logoResId"));
             @SuppressLint("Range") String password = cursor.getString(cursor.getColumnIndex("password"));
             @SuppressLint("Range") String timestamp = cursor.getString(cursor.getColumnIndex("timestamp"));
-            services.add(new Service(id, service, logoResId, password, timestamp));
+            @SuppressLint("Range") String extraData = cursor.getString(cursor.getColumnIndex("extra"));
+            services.add(new Service(id, service, logoResId, password, timestamp, extraData));
         }
         return services;
     }
@@ -103,7 +104,8 @@ public class DatabaseManager {
             @SuppressLint("Range") int logoResId = cursor.getInt(cursor.getColumnIndex("logoResId"));
             @SuppressLint("Range") String password = cursor.getString(cursor.getColumnIndex("password"));
             @SuppressLint("Range") String timestamp = cursor.getString(cursor.getColumnIndex("timestamp"));
-            service = new Service(id, name, logoResId, password, timestamp);
+            @SuppressLint("Range") String extraData = cursor.getString(cursor.getColumnIndex("extra"));
+            service = new Service(id, name, logoResId, password, timestamp, extraData);
         }
         cursor.close();
         return service;

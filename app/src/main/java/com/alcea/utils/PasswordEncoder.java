@@ -60,7 +60,7 @@ public class PasswordEncoder {
 
     public static String encrypt(String password, String masterPassword) throws Exception {
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        SecretKeySpec keySpec = new SecretKeySpec(digest.digest(masterPassword.getBytes(StandardCharsets.UTF_8)), "AES");
+        SecretKeySpec keySpec = new SecretKeySpec(digest.digest(masterPassword.getBytes()), "AES");
         byte[] iv = generateIV();
         Cipher cipher = Cipher.getInstance(ALGORITHM_DATA);
         cipher.init(Cipher.ENCRYPT_MODE, keySpec, new IvParameterSpec(iv));
@@ -79,7 +79,8 @@ public class PasswordEncoder {
         byte[] encrypted = new byte[combined.length - iv.length];
         System.arraycopy(combined, iv.length, encrypted, 0, encrypted.length);
 
-        SecretKeySpec keySpec = new SecretKeySpec(masterPassword.getBytes(), "AES");
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        SecretKeySpec keySpec = new SecretKeySpec(digest.digest(masterPassword.getBytes()), "AES");
         Cipher cipher = Cipher.getInstance(ALGORITHM_DATA);
         cipher.init(Cipher.DECRYPT_MODE, keySpec, new IvParameterSpec(iv));
         byte[] original = cipher.doFinal(encrypted);

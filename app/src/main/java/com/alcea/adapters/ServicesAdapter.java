@@ -29,6 +29,7 @@ public class ServicesAdapter extends RecyclerView.Adapter<ServicesAdapter.Servic
     public void onBindViewHolder(@NonNull ServiceViewHolder holder, int position) {
         Service service = servicesList.get(position);
         holder.serviceName.setText(service.getName());
+        holder.serviceTimestamp.setText(service.getTimestamp());
 
         if (service.getLogoResId() != null) {
             holder.serviceLogo.setImageResource(service.getLogoResId());
@@ -46,11 +47,13 @@ public class ServicesAdapter extends RecyclerView.Adapter<ServicesAdapter.Servic
     static class ServiceViewHolder extends RecyclerView.ViewHolder {
         TextView serviceName;
         ImageView serviceLogo;
+        TextView serviceTimestamp;
 
         public ServiceViewHolder(@NonNull View itemView) {
             super(itemView);
             serviceName = itemView.findViewById(R.id.service_name);
             serviceLogo = itemView.findViewById(R.id.service_logo);
+            serviceTimestamp = itemView.findViewById(R.id.service_timestamp);
         }
     }
 }
