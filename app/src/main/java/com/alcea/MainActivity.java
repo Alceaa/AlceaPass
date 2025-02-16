@@ -174,7 +174,6 @@ public class MainActivity extends AbstractActivity {
         switch (filter){
             case "По названию":
                 servicesList.sort((o1, o2) -> o2.getName().compareTo(o1.getName()));
-                Collections.reverse(servicesList);
                 break;
             case "По дате добавления":
                 servicesList.sort(Comparator.comparing(o -> Utils.dateParse(o.getTimestamp())));
@@ -182,6 +181,7 @@ public class MainActivity extends AbstractActivity {
             default:
                 break;
         }
+        Collections.reverse(servicesList);
         updateServiceList();
     }
 

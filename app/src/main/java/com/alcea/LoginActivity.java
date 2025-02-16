@@ -58,7 +58,7 @@ public class LoginActivity extends AbstractActivity implements DialogBehaviour {
             Profile profile = databaseManager.getProfile(profileSpinner.getSelectedItem().toString());
             if(PasswordEncoder.authenticate(masterPasswordText, profile.getMaster(), profile.getSalt())){
                 Intent i = new Intent(this, MainActivity.class);
-                i.putExtra("master", masterPasswordText);
+                i.putExtra("master", profile.getMaster());
                 transfer(i);
             }
             else{

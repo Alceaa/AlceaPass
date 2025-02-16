@@ -1,20 +1,16 @@
 package com.alcea.utils;
 
+import com.alcea.models.Password;
+
+import java.nio.charset.CharsetEncoder;
 import java.nio.charset.StandardCharsets;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
-import java.util.Arrays;
 import java.util.Base64;
-
-import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
@@ -28,17 +24,14 @@ public class PasswordEncoder {
     private static SecureRandom random = new SecureRandom();
 
 
-    public static String[] hash(String password) throws NoSuchAlgorithmException, InvalidKeySpecException {
-        String[] res = new String[2];
+    public static Password hash(String password) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        Password res = new Password();
         Base64.Encoder enc = Base64.getUrlEncoder().withoutPadding();
         byte[] salt = new byte[SIZE / 8];
         random.nextBytes(salt);
         byte[] dk = pbkdf2(password.toCharArray(), salt);
-        byte[] hash = new byte[salt.length + dk.length];
-        System.arraycopy(salt, 0, hash, 0, salt.length);
-        System.arraycopy(dk, 0, hash, salt.length, dk.length);
-        res[0] = enc.encodeToString(hash);
-        res[1] = enc.encodeToString(salt);
+        res.hash = enc.encodeToString(dk);
+        res.salt = enc.encodeToString(salt);
         return res;
     }
     public static boolean authenticate(String password, String hashStored, String saltStored) throws NoSuchAlgorithmException, InvalidKeySpecException {
@@ -47,7 +40,7 @@ public class PasswordEncoder {
         byte[] check = pbkdf2(password.toCharArray(), salt);
         int zero = 0;
         for (int idx = 0; idx < check.length; ++idx)
-            zero |= hash[salt.length + idx] ^ check[idx];
+            zero |= hash[idx] ^ check[idx];
         return zero == 0;
     }
 
@@ -59,17 +52,16 @@ public class PasswordEncoder {
     }
 
     public static String encrypt(String password, String masterPassword) throws Exception {
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        SecretKeySpec keySpec = new SecretKeySpec(digest.digest(masterPassword.getBytes()), "AES");
+        SecretKeySpec keySpec = new SecretKeySpec(Base64.getUrlDecoder().decode(masterPassword), "AES");
         byte[] iv = generateIV();
         Cipher cipher = Cipher.getInstance(ALGORITHM_DATA);
         cipher.init(Cipher.ENCRYPT_MODE, keySpec, new IvParameterSpec(iv));
-        byte[] encrypted = cipher.doFinal(password.getBytes());
+        byte[] encrypted = cipher.doFinal(Base64.getUrlDecoder().decode(password));
 
         byte[] combined = new byte[iv.length + encrypted.length];
         System.arraycopy(iv, 0, combined, 0, iv.length);
         System.arraycopy(encrypted, 0, combined, iv.length, encrypted.length);
-        return Base64.getEncoder().encodeToString(combined);
+        return Base64.getEncoder().withoutPadding().encodeToString(combined);
     }
     public static String decrypt(String encryptedData, String masterPassword) throws Exception {
         byte[] combined = Base64.getDecoder().decode(encryptedData);
@@ -79,12 +71,11 @@ public class PasswordEncoder {
         byte[] encrypted = new byte[combined.length - iv.length];
         System.arraycopy(combined, iv.length, encrypted, 0, encrypted.length);
 
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        SecretKeySpec keySpec = new SecretKeySpec(digest.digest(masterPassword.getBytes()), "AES");
+        SecretKeySpec keySpec = new SecretKeySpec(Base64.getUrlDecoder().decode(masterPassword), "AES");
         Cipher cipher = Cipher.getInstance(ALGORITHM_DATA);
         cipher.init(Cipher.DECRYPT_MODE, keySpec, new IvParameterSpec(iv));
         byte[] original = cipher.doFinal(encrypted);
-        return new String(original);
+        return Base64.getEncoder().withoutPadding().encodeToString(original);
     }
 
     private static byte[] pbkdf2(char[] password, byte[] salt) throws NoSuchAlgorithmException, InvalidKeySpecException {

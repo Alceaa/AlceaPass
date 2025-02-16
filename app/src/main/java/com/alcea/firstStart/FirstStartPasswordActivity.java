@@ -7,6 +7,7 @@ import com.alcea.AbstractActivity;
 import com.alcea.MainActivity;
 import com.alcea.R;
 import com.alcea.interfaces.DialogBehaviour;
+import com.alcea.models.Password;
 import com.alcea.models.Profile;
 import com.alcea.utils.CheckPassword;
 import com.alcea.utils.PasswordEncoder;
@@ -61,9 +62,9 @@ public class FirstStartPasswordActivity extends AbstractActivity implements Dial
     }
 
     private void success() throws NoSuchAlgorithmException, InvalidKeySpecException {
-        String[] encoded = PasswordEncoder.hash(masterPasswordText);
-        String master = encoded[0];
-        String salt = encoded[1];
+        Password encoded = PasswordEncoder.hash(masterPasswordText);
+        String master = encoded.hash;
+        String salt = encoded.salt;
         Profile profile = new Profile();
         profile.setName(profileText);
         profile.setMaster(master);
