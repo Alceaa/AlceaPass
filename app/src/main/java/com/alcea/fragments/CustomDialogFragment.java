@@ -2,34 +2,16 @@ package com.alcea.fragments;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.Context;
 import android.os.Bundle;
-
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
-
-import com.alcea.LoginActivity;
-import com.alcea.MainActivity;
-import com.alcea.interfaces.DialogBehaviour;
-
-import java.util.HashMap;
-import java.util.Map;
+import com.alcea.utils.CustomDialog;
 
 public class CustomDialogFragment extends DialogFragment {
-    private DialogBehaviour listener;
-    Map<String, Class> activities = new HashMap<>();
+    private CustomDialog.CustomDialogListener listener;
 
-    @Override
-    public void onAttach(@NonNull Context context){
-        super.onAttach(context);
-        try {
-            listener = (DialogBehaviour) context;
-        }
-        catch (ClassCastException e){
-            throw new ClassCastException();
-        }
-        activities.put("main", MainActivity.class);
-        activities.put("login", LoginActivity.class);
+    public CustomDialogFragment(CustomDialog.CustomDialogListener listener){
+        this.listener = listener;
     }
 
     @NonNull
