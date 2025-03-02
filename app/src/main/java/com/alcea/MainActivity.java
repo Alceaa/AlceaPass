@@ -2,7 +2,6 @@ package com.alcea;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -23,11 +22,10 @@ import com.alcea.models.Service;
 import com.alcea.utils.PasswordEncoder;
 import com.alcea.utils.Utils;
 
-import org.w3c.dom.Text;
-
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class MainActivity extends AbstractActivity {
     private Bundle extras;
@@ -38,6 +36,7 @@ public class MainActivity extends AbstractActivity {
     private Button addServiceButton;
     private int extraFieldCount = 0;
     private static final int MAX_EXTRA_FIELDS = 5;
+    private EditText servicePasswordEditText;
 
     @SuppressLint("ResourceType")
     @Override
@@ -81,17 +80,22 @@ public class MainActivity extends AbstractActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.CustomAlertDialog);
         builder.setTitle("Добавить новый сервис");
         LayoutInflater inflater = getLayoutInflater();
-        View dialogView = inflater.inflate(R.layout.dialog_service, null);
+        View dialogView = inflater.inflate(R.layout.dialog_service_add, null);
         builder.setView(dialogView);
 
         EditText serviceNameEditText = dialogView.findViewById(R.id.service_name);
-        EditText servicePasswordEditText = dialogView.findViewById(R.id.service_password);
+        servicePasswordEditText = dialogView.findViewById(R.id.service_password);
         LinearLayout extraFieldsContainer = dialogView.findViewById(R.id.extra_fields_container);
         Button addFieldButton = dialogView.findViewById(R.id.add_field_button);
         addFieldButton.setOnClickListener(v -> {
+            extraFieldCount = Utils.countEditText(extraFieldsContainer);
             if(extraFieldCount < MAX_EXTRA_FIELDS){
                 addExtraField(extraFieldsContainer);
             }
+        });
+        Button generatePasswordButton = dialogView.findViewById(R.id.generate_password);
+        generatePasswordButton.setOnClickListener(v -> {
+            showGeneratePasswordDialog();
         });
         builder.setPositiveButton("Сохранить", null);
         builder.setNegativeButton("Отмена", (dialog, which) -> dialog.dismiss());
@@ -106,7 +110,7 @@ public class MainActivity extends AbstractActivity {
         dialog.setOnShowListener(v1 -> dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v2 -> {
             String serviceName = serviceNameEditText.getText().toString();
             String servicePassword = servicePasswordEditText.getText().toString();
-            String extraData = getExtraFieldsData(extraFieldsContainer);
+            String extraData = Utils.getEditTextData(extraFieldsContainer);
             if(serviceSave(serviceName, servicePassword, extraData)){
                 dialog.dismiss();
             }
@@ -120,6 +124,7 @@ public class MainActivity extends AbstractActivity {
 
     private void addExtraField(LinearLayout container){
         EditText extraFieldEditText = new EditText(this);
+        extraFieldEditText.setTextColor(Color.WHITE);
         Button removeFieldButton = new Button(this);
         removeFieldButton.setText("Удалить");
         removeFieldButton.setOnClickListener(v -> {
@@ -133,15 +138,22 @@ public class MainActivity extends AbstractActivity {
         extraFieldCount++;
     }
 
-    private String getExtraFieldsData(LinearLayout container){
-        int size = container.getChildCount();
-        String[] data = new String[size / 2];
-        for(int i = 0; i < size; i++){
-            if(container.getChildAt(i) instanceof EditText){
-                data[i] = ((EditText) container.getChildAt(i)).getText().toString();
-            }
+    private void setExtraFieldsData(LinearLayout container, String data){
+        String[] dataArr = data.split(";");
+        for(String dataVal : dataArr){
+            EditText extraFieldEditText = new EditText(this);
+            extraFieldEditText.setTextColor(Color.WHITE);
+            extraFieldEditText.setText(dataVal);
+            Button removeFieldButton = new Button(this);
+            removeFieldButton.setText("Удалить");
+            removeFieldButton.setOnClickListener(v -> {
+                container.removeView(extraFieldEditText);
+                container.removeView(removeFieldButton);
+            });
+
+            container.addView(extraFieldEditText);
+            container.addView(removeFieldButton);
         }
-        return String.join(";", data);
     }
 
     private boolean serviceSave(String serviceName, String servicePassword, String extraData){
@@ -160,15 +172,41 @@ public class MainActivity extends AbstractActivity {
         }
         Service newService = databaseManager.createService(service);
         servicesList.add(newService);
-        updateServiceList(servicesList.indexOf(newService));
+        updateServiceListInsert(servicesList.indexOf(newService));
+        return true;
+    }
+    private boolean serviceUpdate(Service service, String serviceName, String servicePassword, String extraData){
+        if(!service.getName().equals(serviceName) && databaseManager.getService(serviceName) != null){
+            return false;
+        }
+        if(service.getName().equals(serviceName) && service.getPassword().equals(servicePassword)
+        && service.getExtraData().equals(extraData)){
+            return true;
+        }
+        int pos = Utils.findServiceByName(servicesList, service.getName());
+        service.setName(serviceName);
+        service.setTimestamp(Utils.timestamp());
+        service.setExtraData(extraData);
+        try {
+            String encrypted = PasswordEncoder.encrypt(servicePassword, extras.getString("master"));
+            service.setPassword(encrypted);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        databaseManager.updateService(service);
+        servicesList.set(pos, service);
+        updateServiceListChange(pos);
         return true;
     }
 
     private void updateServiceList(){
         servicesAdapter.notifyDataSetChanged();
     }
-    private void updateServiceList(int position){
+    private void updateServiceListInsert(int position){
         servicesAdapter.notifyItemInserted(position);
+    }
+    private void updateServiceListChange(int position){
+        servicesAdapter.notifyItemChanged(position);
     }
 
     private void serviceItemsFilter(String filter){
@@ -191,7 +229,7 @@ public class MainActivity extends AbstractActivity {
         TextView serviceName = item.findViewById(R.id.service_name);
         builder.setTitle("Информация о " + serviceName.getText().toString());
         LayoutInflater inflater = getLayoutInflater();
-        View dialogView = inflater.inflate(R.layout.dialog_service, null);
+        View dialogView = inflater.inflate(R.layout.dialog_service_info, null);
         builder.setView(dialogView);
 
         Service service = databaseManager.getService(serviceName.getText().toString());
@@ -205,6 +243,53 @@ public class MainActivity extends AbstractActivity {
             throw new RuntimeException(e);
         }
         LinearLayout extraFieldsContainer = dialogView.findViewById(R.id.extra_fields_container);
-        builder.show();
+        setExtraFieldsData(extraFieldsContainer, service.getExtraData());
+        Button addFieldButton = dialogView.findViewById(R.id.add_field_button);
+        addFieldButton.setOnClickListener(v -> {
+            extraFieldCount = Utils.countEditText(extraFieldsContainer);
+            if(extraFieldCount < MAX_EXTRA_FIELDS){
+                addExtraField(extraFieldsContainer);
+            }
+        });
+        Button saveButton = dialogView.findViewById(R.id.save_button);
+        AlertDialog dialog = builder.create();
+        saveButton.setOnClickListener(v -> {
+            String newServiceName = serviceNameEditText.getText().toString();
+            String newServicePassword = servicePasswordEditText.getText().toString();
+            String newExtraData = Utils.getEditTextData(extraFieldsContainer);
+            if(serviceUpdate(service, newServiceName, newServicePassword, newExtraData)){
+                dialog.dismiss();
+            }
+            else{
+                TextView error = dialogView.findViewById(R.id.service_add_error);
+                error.setText("Ошибка! Сервис с таким названием уже существует");
+            }
+        });
+        dialog.show();
+    }
+
+    private void showGeneratePasswordDialog(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.CustomAlertDialog);
+        builder.setTitle("Сгенерировать пароль");
+        LayoutInflater inflater = getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.dialog_generate_password, null);
+        builder.setView(dialogView);
+        AlertDialog dialog = builder.create();
+        Button easyButton = dialogView.findViewById(R.id.easy_button);
+        Button middleButton = dialogView.findViewById(R.id.middle_button);
+        Button hardButton = dialogView.findViewById(R.id.hard_button);
+        easyButton.setOnClickListener(v -> {
+            servicePasswordEditText.setText(Utils.generatePassword(4));
+            dialog.dismiss();
+        });
+        middleButton.setOnClickListener(v -> {
+            servicePasswordEditText.setText(Utils.generatePassword(8));
+            dialog.dismiss();
+        });
+        hardButton.setOnClickListener(v -> {
+            servicePasswordEditText.setText(Utils.generatePassword(12));
+            dialog.dismiss();
+        });
+        dialog.show();
     }
 }

@@ -36,11 +36,22 @@
             android:layout_height="wrap_content"
             android:orientation="vertical" />
 
-        <Button
-            android:id="@+id/add_field_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Добавить поле" />
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <Button
+                android:id="@+id/add_field_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Добавить поле" />
+            <Button
+                android:id="@+id/save_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Сохранить"
+                android:layout_alignParentEnd="true"/>
+        </RelativeLayout>
         <TextView
             android:id="@+id/service_add_error"
             android:layout_width="wrap_content"

@@ -117,7 +117,20 @@ public class DatabaseManager {
         cv.put("logoResId", service.getLogoResId());
         cv.put("password", service.getPassword());
         cv.put("timestamp", service.getTimestamp());
+        cv.put("extra", service.getExtraData());
         database.insert("services", null, cv);
+        return getService(service.getName());
+    }
+
+    public Service updateService(Service service){
+        ContentValues cv = new ContentValues();
+        cv.put("service", service.getName());
+        cv.put("logoResId", service.getLogoResId());
+        cv.put("password", service.getPassword());
+        cv.put("timestamp", service.getTimestamp());
+        cv.put("extra", service.getExtraData());
+        String whereClause = "id = ?";
+        database.update("services", cv, whereClause, new String[]{String.valueOf(service.getId())});
         return getService(service.getName());
     }
 }
