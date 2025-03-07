@@ -111,6 +111,11 @@ public class DatabaseManager {
         return service;
     }
 
+    public void deleteService(Service service){
+        String whereClause = "id = ?";
+        database.delete("services", whereClause, new String[]{String.valueOf(service.getId())});
+    }
+
     public Service createService(Service service){
         ContentValues cv = new ContentValues();
         cv.put("service", service.getName());

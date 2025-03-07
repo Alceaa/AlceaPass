@@ -12,7 +12,7 @@
         android:id="@+id/alceaPass"
         android:layout_width="315dp"
         android:layout_height="72dp"
-        android:layout_marginLeft="64dp"
+        android:layout_marginLeft="48dp"
         android:layout_marginTop="84dp"
         android:fontFamily="@font/allerta"
         android:text="@string/app_name"
@@ -25,7 +25,7 @@
         android:id="@+id/lblProfile"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="84dp"
+        android:layout_marginLeft="76dp"
         android:layout_marginTop="296dp"
         android:fontFamily="@font/allerta"
         android:text="@string/profile_hint"
@@ -38,7 +38,7 @@
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="315dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="68dp"
+        android:layout_marginStart="51dp"
         android:layout_marginTop="350dp"
         android:background="#238A8787"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -64,8 +64,8 @@
         android:id="@+id/lblPassword"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="64dp"
-        android:layout_marginTop="448dp"
+        android:layout_marginLeft="44dp"
+        android:layout_marginTop="444dp"
         android:fontFamily="@font/allerta"
         android:text="@string/master_password_hint"
         android:textAppearance="?android:attr/textAppearanceLarge"
@@ -77,7 +77,7 @@
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="315dp"
         android:layout_height="60dp"
-        android:layout_marginStart="68dp"
+        android:layout_marginStart="51dp"
         android:layout_marginTop="500dp"
         app:endIconMode="password_toggle"
         android:background="#238A8787"
@@ -106,14 +106,13 @@
         android:id="@+id/create"
         android:layout_width="300dp"
         android:layout_height="68dp"
-        android:layout_marginLeft="80dp"
+        android:layout_marginLeft="52dp"
         android:layout_marginTop="592dp"
         android:fontFamily="@font/allerta"
         android:text="@string/profile_create_btn"
         android:textSize="24sp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

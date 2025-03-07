@@ -2,9 +2,12 @@ package com.alcea;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
@@ -12,6 +15,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import androidx.appcompat.widget.PopupMenu;
+import androidx.appcompat.widget.Toolbar;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -25,7 +31,6 @@ import com.alcea.utils.Utils;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class MainActivity extends AbstractActivity {
     private Bundle extras;
@@ -35,12 +40,16 @@ public class MainActivity extends AbstractActivity {
     private int extraFieldCount = 0;
     private static final int MAX_EXTRA_FIELDS = 5;
     private EditText servicePasswordEditText;
+    private Toolbar toolbar;
 
     @SuppressLint("ResourceType")
     @Override
     protected void initialize() {
         setContentView(R.layout.activity_main);
         extras = getIntent().getExtras();
+
+        toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
         String[] filters = getResources().getStringArray(R.array.filter);
         ArrayAdapter filterAdapter = new ArrayAdapter(this, R.layout.filter_item, filters);
@@ -61,6 +70,17 @@ public class MainActivity extends AbstractActivity {
 
             @Override
             public void onLongItemClick(View view, int position) {
+                PopupMenu popupMenu = new PopupMenu(MainActivity.this, servicesRecyclerView);
+                popupMenu.getMenuInflater().inflate(R.menu.service_menu, popupMenu.getMenu());
+                popupMenu.setOnMenuItemClickListener(menuItem -> {
+                    if(menuItem.getItemId() == R.id.delete){
+                        showDeleteServiceDialog(view);
+                        return true;
+                    }
+                    else{
+                        return MainActivity.super.onOptionsItemSelected(menuItem);
+                    }
+                });
 
             }
         }));
@@ -72,6 +92,27 @@ public class MainActivity extends AbstractActivity {
 
         Button addServiceButton = findViewById(R.id.add_service_button);
         addServiceButton.setOnClickListener(v -> showAddServiceDialog());
+    }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_settings) {
+            openSettings();
+            return true;
+        }
+        else{
+            return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void openSettings(){
+        Intent intent = new Intent(this, SettingsActivity.class);
+        startActivity(intent);
     }
 
     private void showAddServiceDialog(){
@@ -199,6 +240,19 @@ public class MainActivity extends AbstractActivity {
         return true;
     }
 
+    private boolean serviceDelete(Service service){
+        if(databaseManager.getService(service.getName()) != null){
+            int pos = Utils.findServiceByName(servicesList, service.getName());
+            servicesList.remove(pos);
+            updateServiceListRemove(pos);
+            databaseManager.deleteService(service);
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
     private void updateServiceList(){
         servicesAdapter.notifyDataSetChanged();
     }
@@ -207,6 +261,9 @@ public class MainActivity extends AbstractActivity {
     }
     private void updateServiceListChange(int position){
         servicesAdapter.notifyItemChanged(position);
+    }
+    private void updateServiceListRemove(int position){
+        servicesAdapter.notifyItemRemoved(position);
     }
 
     private void serviceItemsFilter(String filter){
@@ -291,5 +348,27 @@ public class MainActivity extends AbstractActivity {
             dialog.dismiss();
         });
         dialog.show();
+    }
+
+    private void showDeleteServiceDialog(View item){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.CustomAlertDialog);
+        TextView serviceName = item.findViewById(R.id.service_name);
+        builder.setTitle("Удалить " + serviceName.getText().toString() + "?");
+        builder.setMessage("Вы действительно хотите удалить этот сервис?");
+        LayoutInflater inflater = getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.dialog_delete, null);
+        builder.setView(dialogView);
+        AlertDialog dialog = builder.create();
+        Button cancelButton = dialogView.findViewById(R.id.cancel_button);
+        Button deleteButton = dialogView.findViewById(R.id.delete_button);
+        cancelButton.setOnClickListener(v -> {
+            dialog.dismiss();
+        });
+        deleteButton.setOnClickListener(v -> {
+            Service service = databaseManager.getService(serviceName.getText().toString());
+            serviceDelete(service);
+            dialog.dismiss();
+        });
+
     }
 }

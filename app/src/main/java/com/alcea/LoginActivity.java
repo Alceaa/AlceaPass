@@ -1,6 +1,7 @@
 package com.alcea;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.Toast;
@@ -18,6 +19,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.List;
 
 public class LoginActivity extends AbstractActivity {
+    private SharedPreferences prefs;
     TextInputEditText masterPassword;
     Button login;
     Spinner profileSpinner;
@@ -29,6 +31,7 @@ public class LoginActivity extends AbstractActivity {
     @Override
     protected void initialize() {
         setContentView(R.layout.login);
+        prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
         masterPassword = findViewById(R.id.masterPassword);
         login = findViewById(R.id.login);
         profileSpinner = findViewById(R.id.profileSpinner);
@@ -45,25 +48,10 @@ public class LoginActivity extends AbstractActivity {
         CustomSpinnerAdapter adapter = new CustomSpinnerAdapter(this, profileNames);
         adapter.setDropDownViewResource(R.layout.spinner_dropdown);
         profileSpinner.setAdapter(adapter);
+
         BiometricManager biometricManager = BiometricManager.from(this);
-        Biometric biometric = new Biometric(this, new Biometric.AuthenticationCallback() {
-            @Override
-            public void onAuthenticationSuccess() {
-                transferToMain();
-            }
-
-            @Override
-            public void onAuthenticationError(String error) {
-                Toast.makeText(getApplicationContext(), error, Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onAuthenticationFailed() {
-                Toast.makeText(getApplicationContext(), "Authentication failed", Toast.LENGTH_SHORT).show();
-            }
-        });
-        if(Biometric.checkBiometricAvailable(biometricManager, this)){
-            biometric.showBiometricDialog();
+        if(Biometric.checkBiometricAvailable(biometricManager, this) && prefs.getBoolean("biometricEnable", true)){
+            showBiometricDialog();
         }
         login.setOnClickListener(v -> {
             try {
@@ -101,6 +89,25 @@ public class LoginActivity extends AbstractActivity {
         }
     }
 
+    private void showBiometricDialog(){
+        Biometric biometric = new Biometric(this, new Biometric.AuthenticationCallback() {
+            @Override
+            public void onAuthenticationSuccess() {
+                transferToMain();
+            }
+
+            @Override
+            public void onAuthenticationError(String error) {
+                Toast.makeText(getApplicationContext(), error, Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onAuthenticationFailed() {
+                Toast.makeText(getApplicationContext(), "Authentication failed", Toast.LENGTH_SHORT).show();
+            }
+        });
+        biometric.showBiometricDialog();
+    }
 
     private void transferToMain(){
         Intent i = new Intent(this, MainActivity.class);

@@ -2,6 +2,7 @@ package com.alcea.firstStart;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -27,12 +28,12 @@ public class FirstStartPasswordActivity extends AbstractActivity {
     private String masterPasswordText;
 
     private String master;
-    private Context context;
+    private SharedPreferences prefs;
 
     @Override
     protected void initialize() {
-        context = this;
         setContentView(R.layout.firststart);
+        prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
         profile = findViewById(R.id.profile);
         masterPassword = findViewById(R.id.masterPassword);
         create = findViewById(R.id.create);
@@ -95,38 +96,21 @@ public class FirstStartPasswordActivity extends AbstractActivity {
         databaseManager.createProfile(profile);
 
         showBiometricDialog();
-
-        Intent i = new Intent(this, MainActivity.class);
-        i.putExtra("master", master);
-        transfer(i);
     }
 
     public void showBiometricDialog(){
         CustomDialog customDialog = new CustomDialog(this, new CustomDialog.CustomDialogListener() {
             @Override
             public void onDialogPositiveClick(DialogFragment dialog) {
-                Biometric biometric = new Biometric(context, new Biometric.AuthenticationCallback() {
-                    @Override
-                    public void onAuthenticationSuccess() {
-                        transferToMain();
-                    }
-
-                    @Override
-                    public void onAuthenticationError(String error) {
-                        Toast.makeText(getApplicationContext(), error, Toast.LENGTH_SHORT).show();
-                    }
-
-                    @Override
-                    public void onAuthenticationFailed() {
-                        Toast.makeText(getApplicationContext(), "Authentication failed", Toast.LENGTH_SHORT).show();
-                    }
-                });
-                biometric.showBiometricDialog();
+                prefs.edit().putBoolean("biometricEnable", true).apply();
+                transferToMain();
             }
 
             @Override
             public void onDialogNegativeClick(DialogFragment dialog) {
+                prefs.edit().putBoolean("biometricEnable", false).apply();
                 dialog.dismiss();
+                transferToMain();
             }
         });
         customDialog.showCustomDialog("Включить аутентификацию по отпечатку пальца", "Хотите включить аутентификацию по отпечатку пальца для повышения безопасности?", "Да", "Нет");
