@@ -30,10 +30,8 @@ import java.util.concurrent.atomic.AtomicReference;
 public class MainActivity extends AbstractActivity {
     private Bundle extras;
 
-    private RecyclerView servicesRecyclerView;
     private ServicesAdapter servicesAdapter;
     private List<Service> servicesList;
-    private Button addServiceButton;
     private int extraFieldCount = 0;
     private static final int MAX_EXTRA_FIELDS = 5;
     private EditText servicePasswordEditText;
@@ -53,7 +51,7 @@ public class MainActivity extends AbstractActivity {
         });
 
 
-        servicesRecyclerView = findViewById(R.id.services_recycler_view);
+        RecyclerView servicesRecyclerView = findViewById(R.id.services_recycler_view);
         servicesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         servicesRecyclerView.addOnItemTouchListener(new RecyclerItemClickListener(this, servicesRecyclerView, new RecyclerItemClickListener.OnItemClickListener() {
             @Override
@@ -72,7 +70,7 @@ public class MainActivity extends AbstractActivity {
         servicesAdapter = new ServicesAdapter(servicesList);
         servicesRecyclerView.setAdapter(servicesAdapter);
 
-        addServiceButton = findViewById(R.id.add_service_button);
+        Button addServiceButton = findViewById(R.id.add_service_button);
         addServiceButton.setOnClickListener(v -> showAddServiceDialog());
     }
 
@@ -141,18 +139,20 @@ public class MainActivity extends AbstractActivity {
     private void setExtraFieldsData(LinearLayout container, String data){
         String[] dataArr = data.split(";");
         for(String dataVal : dataArr){
-            EditText extraFieldEditText = new EditText(this);
-            extraFieldEditText.setTextColor(Color.WHITE);
-            extraFieldEditText.setText(dataVal);
-            Button removeFieldButton = new Button(this);
-            removeFieldButton.setText("Удалить");
-            removeFieldButton.setOnClickListener(v -> {
-                container.removeView(extraFieldEditText);
-                container.removeView(removeFieldButton);
-            });
+            if(!dataVal.isEmpty()) {
+                EditText extraFieldEditText = new EditText(this);
+                extraFieldEditText.setTextColor(Color.WHITE);
+                extraFieldEditText.setText(dataVal);
+                Button removeFieldButton = new Button(this);
+                removeFieldButton.setText("Удалить");
+                removeFieldButton.setOnClickListener(v -> {
+                    container.removeView(extraFieldEditText);
+                    container.removeView(removeFieldButton);
+                });
 
-            container.addView(extraFieldEditText);
-            container.addView(removeFieldButton);
+                container.addView(extraFieldEditText);
+                container.addView(removeFieldButton);
+            }
         }
     }
 
