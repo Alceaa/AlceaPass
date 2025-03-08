@@ -112,6 +112,7 @@ public class MainActivity extends AbstractActivity {
 
     private void openSettings(){
         Intent intent = new Intent(this, SettingsActivity.class);
+        intent.putExtra("profile", extras.getString("profile"));
         startActivity(intent);
     }
 
@@ -164,6 +165,7 @@ public class MainActivity extends AbstractActivity {
     private void addExtraField(LinearLayout container){
         EditText extraFieldEditText = new EditText(this);
         extraFieldEditText.setTextColor(Color.WHITE);
+        extraFieldEditText.setMaxLines(1);
         Button removeFieldButton = new Button(this);
         removeFieldButton.setText("Удалить");
         removeFieldButton.setOnClickListener(v -> {
@@ -183,6 +185,7 @@ public class MainActivity extends AbstractActivity {
             if(!dataVal.isEmpty()) {
                 EditText extraFieldEditText = new EditText(this);
                 extraFieldEditText.setTextColor(Color.WHITE);
+                extraFieldEditText.setMaxLines(1);
                 extraFieldEditText.setText(dataVal);
                 Button removeFieldButton = new Button(this);
                 removeFieldButton.setText("Удалить");

@@ -111,6 +111,7 @@ public class LoginActivity extends AbstractActivity {
 
     private void transferToMain(){
         Intent i = new Intent(this, MainActivity.class);
+        i.putExtra("profile", profile.getName());
         i.putExtra("master", profile.getMaster());
         transfer(i);
     }

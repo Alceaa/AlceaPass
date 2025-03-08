@@ -20,6 +20,7 @@
             android:layout_height="wrap_content"
             android:textColor="#FFFFFF"
             android:textColorHint="#FFFFFF"
+            android:singleLine="true"
             android:hint="Название сервиса" />
 
         <EditText
@@ -28,6 +29,7 @@
             android:layout_height="wrap_content"
             android:textColor="#FFFFFF"
             android:textColorHint="#FFFFFF"
+            android:singleLine="true"
             android:hint="Пароль" />
 
         <LinearLayout

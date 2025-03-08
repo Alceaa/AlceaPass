@@ -15,22 +15,13 @@
         >
 
         <EditText
-            android:id="@+id/service_name"
+            android:id="@+id/profile_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="#FFFFFF"
             android:textColorHint="#FFFFFF"
             android:singleLine="true"
-            android:hint="Название сервиса" />
-
-        <EditText
-            android:id="@+id/service_password"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="#FFFFFF"
-            android:textColorHint="#FFFFFF"
-            android:singleLine="true"
-            android:hint="Пароль" />
+            android:hint="Профиль" />
 
         <LinearLayout
             android:id="@+id/extra_fields_container"
@@ -43,27 +34,12 @@
             android:layout_height="wrap_content">
 
             <Button
-                android:id="@+id/add_field_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Добавить поле" />
-            <Button
                 android:id="@+id/save_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Сохранить"
                 android:layout_alignParentEnd="true"/>
         </RelativeLayout>
-        <TextView
-            android:id="@+id/service_add_error"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:fontFamily="@font/allerta"
-            android:textColor="#E3242B"
-            android:textSize="18sp"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
