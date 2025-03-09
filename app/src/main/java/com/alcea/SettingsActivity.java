@@ -19,7 +19,6 @@ import com.alcea.utils.PasswordEncoder;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.TreeMap;
 
 public class SettingsActivity extends AbstractActivity{
     private Bundle extras;

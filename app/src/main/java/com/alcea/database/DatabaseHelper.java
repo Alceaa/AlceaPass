@@ -1,9 +1,6 @@
 package com.alcea.database;
 
-import static android.content.Context.MODE_PRIVATE;
-
 import static com.alcea.utils.Contsants.DATABASE_NAME;
-
 import android.content.Context;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;

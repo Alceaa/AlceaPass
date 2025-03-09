@@ -1,18 +1,13 @@
 package com.alcea.firstStart;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.widget.Button;
-import android.widget.Toast;
-
 import androidx.fragment.app.DialogFragment;
 import com.alcea.AbstractActivity;
 import com.alcea.MainActivity;
 import com.alcea.R;
 import com.alcea.models.Password;
 import com.alcea.models.Profile;
-import com.alcea.utils.Biometric;
 import com.alcea.utils.CheckPassword;
 import com.alcea.utils.CustomDialog;
 import com.alcea.utils.PasswordEncoder;
