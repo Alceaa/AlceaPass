@@ -7,15 +7,17 @@ public class Service {
     private String password;
     private String timestamp;
     private String extraData;
+    private Integer profileId;
 
 
-    public Service(int id, String name, Integer logoResId, String password, String timestamp, String extraData) {
+    public Service(int id, String name, Integer logoResId, String password, String timestamp, String extraData, Integer profileId) {
         this.id = id;
         this.name = name;
         this.logoResId = logoResId;
         this.password = password;
         this.timestamp = timestamp;
         this.extraData = extraData;
+        this.profileId = profileId;
 
     }
     public Service(){
@@ -46,6 +48,10 @@ public class Service {
         return extraData;
     }
 
+    public Integer getProfileId() {
+        return profileId;
+    }
+
     public void setName(String name) {
         this.name = name;
     }
@@ -64,5 +70,9 @@ public class Service {
 
     public void setExtraData(String extraData) {
         this.extraData = extraData;
+    }
+
+    public void setProfileId(Integer profileId) {
+        this.profileId = profileId;
     }
 }

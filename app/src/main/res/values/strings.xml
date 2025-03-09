@@ -8,6 +8,7 @@
     <string name="master_password_hint">Придумайте мастер-пароль:</string>
     <string name="profile_hint">Введите имя профиля:</string>
     <string name="profile_spinner_hint">Профиль:</string>
+    <string name="settings_profile"><u>Профиль: </u></string>
     <string-array name="filter">
         <item>По названию</item>
         <item>По дате создания</item>

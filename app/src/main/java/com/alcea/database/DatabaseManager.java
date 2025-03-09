@@ -68,21 +68,24 @@ public class DatabaseManager {
         return getProfile(profile.getName());
     }
 
-    public long deleteProfile(Profile profile){
-        String whereClause = "id = " + profile.getId();
-        return database.delete("profiles", whereClause, null);
+    public void deleteProfile(Profile profile){
+        String servicesWhereClause = "profileId = ?";
+        database.delete("services", servicesWhereClause, new String[]{String.valueOf(profile.getId())});
+        String profileWhereClause = "id = ?";
+        database.delete("profiles", profileWhereClause, new String[]{String.valueOf(profile.getId())});
     }
 
-    public long updateProfile(Profile profile){
+    public void updateProfile(Profile profile){
         ContentValues cv = new ContentValues();
-        String whereClause = "id = " + profile.getId();
+        String whereClause = "id = ?";
         cv.put("name", profile.getName());
-        return database.update("profiles", cv, whereClause, null);
+        database.update("profiles", cv, whereClause, new String[]{String.valueOf(profile.getId())});
     }
 
-    public List<Service> getServices(){
+    public List<Service> getServices(int askedProfileId){
         ArrayList<Service> services = new ArrayList<>();
-        Cursor cursor = getAllEntries("services", new String[]{"id", "service", "logoResId", "password", "timestamp", "extra"});
+        String query = String.format("SELECT * FROM %s WHERE %s = ?", "services", "profileId");
+        @SuppressLint("Recycle") Cursor cursor = database.rawQuery(query, new String[]{String.valueOf(askedProfileId)});
         while (cursor.moveToNext()){
             @SuppressLint("Range") int id = cursor.getInt(cursor.getColumnIndex("id"));
             @SuppressLint("Range") String service = cursor.getString(cursor.getColumnIndex("service"));
@@ -90,14 +93,15 @@ public class DatabaseManager {
             @SuppressLint("Range") String password = cursor.getString(cursor.getColumnIndex("password"));
             @SuppressLint("Range") String timestamp = cursor.getString(cursor.getColumnIndex("timestamp"));
             @SuppressLint("Range") String extraData = cursor.getString(cursor.getColumnIndex("extra"));
-            services.add(new Service(id, service, logoResId, password, timestamp, extraData));
+            @SuppressLint("Range") int profileId = cursor.getInt(cursor.getColumnIndex("profileId"));
+            services.add(new Service(id, service, logoResId, password, timestamp, extraData, profileId));
         }
         return services;
     }
-    public Service getService(String nameAsked){
+    public Service getService(String nameAsked, int profileIdAsked){
         Service service = null;
-        String query = String.format("SELECT * FROM %s WHERE %s = ?", "services", "service");
-        Cursor cursor = database.rawQuery(query, new String[]{nameAsked});
+        String query = String.format("SELECT * FROM %s WHERE %s = ? AND %s = ?", "services", "service", "profileId");
+        Cursor cursor = database.rawQuery(query, new String[]{nameAsked, String.valueOf(profileIdAsked)});
         if(cursor.moveToFirst()){
             @SuppressLint("Range") int id = cursor.getInt(cursor.getColumnIndex("id"));
             @SuppressLint("Range") String name = cursor.getString(cursor.getColumnIndex("service"));
@@ -105,7 +109,8 @@ public class DatabaseManager {
             @SuppressLint("Range") String password = cursor.getString(cursor.getColumnIndex("password"));
             @SuppressLint("Range") String timestamp = cursor.getString(cursor.getColumnIndex("timestamp"));
             @SuppressLint("Range") String extraData = cursor.getString(cursor.getColumnIndex("extra"));
-            service = new Service(id, name, logoResId, password, timestamp, extraData);
+            @SuppressLint("Range") int profileId = cursor.getInt(cursor.getColumnIndex("profileId"));
+            service = new Service(id, name, logoResId, password, timestamp, extraData, profileId);
         }
         cursor.close();
         return service;
@@ -123,8 +128,9 @@ public class DatabaseManager {
         cv.put("password", service.getPassword());
         cv.put("timestamp", service.getTimestamp());
         cv.put("extra", service.getExtraData());
+        cv.put("profileId", service.getProfileId());
         database.insert("services", null, cv);
-        return getService(service.getName());
+        return getService(service.getName(), service.getProfileId());
     }
 
     public Service updateService(Service service){
@@ -134,8 +140,9 @@ public class DatabaseManager {
         cv.put("password", service.getPassword());
         cv.put("timestamp", service.getTimestamp());
         cv.put("extra", service.getExtraData());
-        String whereClause = "id = ?";
-        database.update("services", cv, whereClause, new String[]{String.valueOf(service.getId())});
-        return getService(service.getName());
+        cv.put("profileId", service.getProfileId());
+        String whereClause = "id = ? AND profileId = ?";
+        database.update("services", cv, whereClause, new String[]{String.valueOf(service.getId()), String.valueOf(service.getProfileId())});
+        return getService(service.getName(), service.getProfileId());
     }
 }

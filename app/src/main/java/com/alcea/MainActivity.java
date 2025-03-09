@@ -2,6 +2,7 @@ package com.alcea;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -15,6 +16,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.Toolbar;
@@ -24,7 +26,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.alcea.adapters.ServicesAdapter;
 import com.alcea.interfaces.RecyclerItemClickListener;
+import com.alcea.models.Profile;
 import com.alcea.models.Service;
+import com.alcea.utils.Biometric;
 import com.alcea.utils.PasswordEncoder;
 import com.alcea.utils.Utils;
 
@@ -34,6 +38,7 @@ import java.util.List;
 
 public class MainActivity extends AbstractActivity {
     private Bundle extras;
+    private Profile profile;
 
     private ServicesAdapter servicesAdapter;
     private List<Service> servicesList;
@@ -47,6 +52,8 @@ public class MainActivity extends AbstractActivity {
     protected void initialize() {
         setContentView(R.layout.activity_main);
         extras = getIntent().getExtras();
+        profile = databaseManager.getProfile(extras.getString("profile", null));
+        prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
 
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -62,10 +69,31 @@ public class MainActivity extends AbstractActivity {
 
         RecyclerView servicesRecyclerView = findViewById(R.id.services_recycler_view);
         servicesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        Context context = this;
         servicesRecyclerView.addOnItemTouchListener(new RecyclerItemClickListener(this, servicesRecyclerView, new RecyclerItemClickListener.OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
-                showInfoServiceDialog(view);
+                if(prefs.getBoolean("requestFingerprint", false)){
+                    Biometric biometric = new Biometric(context, new Biometric.AuthenticationCallback() {
+                        @Override
+                        public void onAuthenticationSuccess() {
+                            showInfoServiceDialog(view);
+                        }
+
+                        @Override
+                        public void onAuthenticationError(String error) {
+                            Toast.makeText(getApplicationContext(), error, Toast.LENGTH_SHORT).show();
+                        }
+
+                        @Override
+                        public void onAuthenticationFailed() {
+                            Toast.makeText(getApplicationContext(), "Authentication failed", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                    biometric.showBiometricDialog();
+                }else {
+                    showInfoServiceDialog(view);
+                }
             }
 
             @Override
@@ -81,11 +109,11 @@ public class MainActivity extends AbstractActivity {
                         return MainActivity.super.onOptionsItemSelected(menuItem);
                     }
                 });
-
+                popupMenu.show();
             }
         }));
 
-        servicesList = databaseManager.getServices();
+        servicesList = databaseManager.getServices(profile.getId());
 
         servicesAdapter = new ServicesAdapter(servicesList);
         servicesRecyclerView.setAdapter(servicesAdapter);
@@ -112,7 +140,7 @@ public class MainActivity extends AbstractActivity {
 
     private void openSettings(){
         Intent intent = new Intent(this, SettingsActivity.class);
-        intent.putExtra("profile", extras.getString("profile"));
+        intent.putExtra("profile", profile.getName());
         startActivity(intent);
     }
 
@@ -201,7 +229,7 @@ public class MainActivity extends AbstractActivity {
     }
 
     private boolean serviceSave(String serviceName, String servicePassword, String extraData){
-        if (databaseManager.getService(serviceName) != null){
+        if (databaseManager.getService(serviceName, profile.getId()) != null){
             return false;
         }
         Service service = new Service();
@@ -209,8 +237,9 @@ public class MainActivity extends AbstractActivity {
         service.setTimestamp(Utils.timestamp());
         service.setExtraData(extraData);
         try {
-            String encrypted = PasswordEncoder.encrypt(servicePassword, extras.getString("master"));
+            String encrypted = PasswordEncoder.encrypt(servicePassword, profile.getMaster());
             service.setPassword(encrypted);
+            service.setProfileId(profile.getId());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -220,7 +249,7 @@ public class MainActivity extends AbstractActivity {
         return true;
     }
     private boolean serviceUpdate(Service service, String serviceName, String servicePassword, String extraData){
-        if(!service.getName().equals(serviceName) && databaseManager.getService(serviceName) != null){
+        if(!service.getName().equals(serviceName) && databaseManager.getService(serviceName, profile.getId()) != null){
             return false;
         }
         if(service.getName().equals(serviceName) && service.getPassword().equals(servicePassword)
@@ -232,7 +261,7 @@ public class MainActivity extends AbstractActivity {
         service.setTimestamp(Utils.timestamp());
         service.setExtraData(extraData);
         try {
-            String encrypted = PasswordEncoder.encrypt(servicePassword, extras.getString("master"));
+            String encrypted = PasswordEncoder.encrypt(servicePassword, profile.getMaster());
             service.setPassword(encrypted);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -244,7 +273,7 @@ public class MainActivity extends AbstractActivity {
     }
 
     private boolean serviceDelete(Service service){
-        if(databaseManager.getService(service.getName()) != null){
+        if(databaseManager.getService(service.getName(), profile.getId()) != null){
             int pos = Utils.findServiceByName(servicesList, service.getName());
             servicesList.remove(pos);
             updateServiceListRemove(pos);
@@ -292,13 +321,13 @@ public class MainActivity extends AbstractActivity {
         View dialogView = inflater.inflate(R.layout.dialog_service_info, null);
         builder.setView(dialogView);
 
-        Service service = databaseManager.getService(serviceName.getText().toString());
+        Service service = databaseManager.getService(serviceName.getText().toString(), profile.getId());
 
         EditText serviceNameEditText = dialogView.findViewById(R.id.service_name);
         serviceNameEditText.setText(service.getName());
         EditText servicePasswordEditText = dialogView.findViewById(R.id.service_password);
         try {
-            servicePasswordEditText.setText(PasswordEncoder.decrypt(service.getPassword(), extras.getString("master")));
+            servicePasswordEditText.setText(PasswordEncoder.decrypt(service.getPassword(), profile.getMaster()));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -368,10 +397,10 @@ public class MainActivity extends AbstractActivity {
             dialog.dismiss();
         });
         deleteButton.setOnClickListener(v -> {
-            Service service = databaseManager.getService(serviceName.getText().toString());
+            Service service = databaseManager.getService(serviceName.getText().toString(), profile.getId());
             serviceDelete(service);
             dialog.dismiss();
         });
-
+        dialog.show();
     }
 }

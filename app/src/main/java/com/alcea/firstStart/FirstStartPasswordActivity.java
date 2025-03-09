@@ -28,7 +28,6 @@ public class FirstStartPasswordActivity extends AbstractActivity {
     private String masterPasswordText;
 
     private String master;
-    private SharedPreferences prefs;
 
     @Override
     protected void initialize() {
@@ -120,7 +119,6 @@ public class FirstStartPasswordActivity extends AbstractActivity {
     private void transferToMain(){
         Intent i = new Intent(this, MainActivity.class);
         i.putExtra("profile", profileText);
-        i.putExtra("master", master);
         transfer(i);
     }
 }

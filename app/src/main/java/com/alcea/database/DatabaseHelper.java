@@ -33,7 +33,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "password TEXT," +
                 "timestamp TEXT," +
                 "extra TEXT," +
-                "FOREIGN KEY (logoResId) REFERENCES logos (id));");
+                "profileId INTEGER," +
+                "FOREIGN KEY (profileId) REFERENCES profiles (id)," +
+                "FOREIGN KEY (logoResId) REFERENCES logos(id));");
     }
 
     @Override

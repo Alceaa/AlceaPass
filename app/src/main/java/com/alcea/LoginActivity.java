@@ -19,7 +19,6 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.List;
 
 public class LoginActivity extends AbstractActivity {
-    private SharedPreferences prefs;
     TextInputEditText masterPassword;
     Button login;
     Spinner profileSpinner;
@@ -93,6 +92,7 @@ public class LoginActivity extends AbstractActivity {
         Biometric biometric = new Biometric(this, new Biometric.AuthenticationCallback() {
             @Override
             public void onAuthenticationSuccess() {
+                profile = databaseManager.getProfile(profileSpinner.getSelectedItem().toString());
                 transferToMain();
             }
 
@@ -112,7 +112,6 @@ public class LoginActivity extends AbstractActivity {
     private void transferToMain(){
         Intent i = new Intent(this, MainActivity.class);
         i.putExtra("profile", profile.getName());
-        i.putExtra("master", profile.getMaster());
         transfer(i);
     }
 

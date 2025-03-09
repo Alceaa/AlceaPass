@@ -1,6 +1,7 @@
 package com.alcea;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -9,6 +10,7 @@ import com.alcea.interfaces.Transferable;
 
 public abstract class AbstractActivity extends AppCompatActivity implements Transferable {
     protected DatabaseManager databaseManager;
+    protected SharedPreferences prefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
